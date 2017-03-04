@@ -15,8 +15,18 @@ describe Zipkin::Tracer do
         expect(span.operation_name).to eq(operation_name)
       end
 
-      it 'has context' do
-        expect(span.context).to eq(Zipkin::SpanContext::NOOP_INSTANCE)
+      context 'span context' do
+        it 'has span_id' do
+          expect(span.context.span_id).to_not be_nil
+        end
+
+        it 'has trace_id' do
+          expect(span.context.trace_id).to_not be_nil
+        end
+
+        it 'has does not have parent_id' do
+          expect(span.context.parent_id).to be_nil
+        end
       end
     end
 
@@ -29,8 +39,18 @@ describe Zipkin::Tracer do
         expect(span.operation_name).to eq(operation_name)
       end
 
-      it 'has child context' do
-        expect(span.context).to eq(root_span.context)
+      context 'span context' do
+        it 'has span_id' do
+          expect(span.context.span_id).to_not be_nil
+        end
+
+        it 'has trace_id' do
+          expect(span.context.trace_id).to_not be_nil
+        end
+
+        it 'has does not have parent_id' do
+          expect(span.context.parent_id).to_not be_nil
+        end
       end
     end
   end

@@ -22,7 +22,12 @@ module Zipkin
     # @return [Span]
     #   The newly-started Span
     def start_span(operation_name, child_of: nil, start_time: Time.now, tags: nil)
-      context = child_of ? child_of.context : SpanContext::NOOP_INSTANCE
+      context =
+        if child_of
+          SpanContext.create_from_parent(child_of)
+        else
+          SpanContext.create_parent_context
+        end
       span = Span.new(self, context)
       span.operation_name = operation_name
       span
