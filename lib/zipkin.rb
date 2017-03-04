@@ -1,0 +1,2 @@
+module Zipkin
+end
