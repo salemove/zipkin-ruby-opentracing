@@ -6,13 +6,18 @@ module Zipkin
 
     # Creates a new {Span}
     #
-    # @param tracer [Tracer] the tracer that created this span
     # @param context [SpanContext] the context of the span
+    # @param context [String] the operation name
+    # @param client [Faraday] faraday instace for making http requests
     #
     # @return [Span] a new Span
-    def initialize(tracer, context)
-      @tracer = tracer
+    def initialize(context, operation_name, client, start_time: Time.now, tags: {}, local_endpoint:)
       @context = context
+      @operation_name = operation_name
+      @client = client
+      @start_time = start_time
+      @tags = tags
+      @local_endpoint = local_endpoint
     end
 
     # Set a tag value on this span
@@ -21,7 +26,7 @@ module Zipkin
     # @param value [String, Numeric, Boolean] the value of the tag. If it's not
     # a String, Numeric, or Boolean it will be encoded with to_s
     def set_tag(key, value)
-      self
+      @tags = @tags.merge(key => value)
     end
 
     # Set a baggage item on the span
@@ -54,7 +59,40 @@ module Zipkin
     #
     # @param end_time [Time] custom end time, if not now
     def finish(end_time: Time.now)
-      nil
+      finish_ts = (end_time.to_f * 1_000_000).to_i
+      start_ts = (@start_time.to_f * 1_000_000).to_i
+      duration = finish_ts - start_ts
+      is_server = ['server', 'consumer'].include?(@tags['span.kind'] || 'server')
+
+      @client.send_span(
+        traceId: @context.trace_id,
+        id: @context.span_id,
+        parentId: @context.parent_id,
+        name: @operation_name,
+        timestamp: start_ts,
+        duration: duration,
+        annotations: [
+          {
+            timestamp: start_ts,
+            value: is_server ? 'sr' : 'cs',
+            endpoint: @local_endpoint
+          },
+          {
+            timestamp: finish_ts,
+            value: is_server ? 'ss': 'cr',
+            endpoint: @local_endpoint
+          }
+        ],
+        binaryAnnotations: build_binary_annotations
+      )
+    end
+
+    private
+
+    def build_binary_annotations
+      @tags.map do |name, value|
+        {key: name, value: value.to_s}
+      end
     end
   end
 end
