@@ -1,8 +1,6 @@
 # Zipkin
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/zipkin`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+OpenTracing Tracer implementation for Zipkin in Ruby
 
 ## Installation
 
@@ -12,17 +10,15 @@ Add this line to your application's Gemfile:
 gem 'zipkin'
 ```
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install zipkin
-
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+require 'zipkin/tracer'
+OpenTracing.global_tracer = Zipkin::Tracer.build(url: 'http://localhost:9411', service_name: 'echo')
+
+span = OpenTracing.start_span('span name')
+span.finish
+```
 
 ## Development
 
@@ -32,7 +28,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/Indrek Juhkam/zipkin.
+Bug reports and pull requests are welcome on GitHub at https://github.com/salemove/zipkin-ruby-opentracing
 
 
 ## License
