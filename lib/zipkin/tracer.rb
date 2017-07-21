@@ -47,14 +47,11 @@ module Zipkin
     # @param carrier [Carrier] A carrier object of the type dictated by the specified `format`
     def inject(span_context, format, carrier)
       case format
-      when OpenTracing::FORMAT_TEXT_MAP
-        carrier['trace-id'] = span_context.trace_id
-        carrier['parent-id'] = span_context.parent_id
-        carrier['span-id'] = span_context.span_id
       when OpenTracing::FORMAT_RACK
-        carrier['X-Trace-Id'] = span_context.trace_id
-        carrier['X-Trace-Parent-Id'] = span_context.parent_id
-        carrier['X-Trace-Span-Id'] = span_context.span_id
+        carrier['X-B3-TraceId'] = span_context.trace_id
+        carrier['X-B3-ParentSpanId'] = span_context.parent_id
+        carrier['X-B3-SpanId'] = span_context.span_id
+        carrier['X-B3-Sampled'] = span_context.sampled? ? '1' : '0'
       else
         STDERR.puts "Logasm::Tracer with format #{format} is not supported yet"
       end
@@ -67,23 +64,19 @@ module Zipkin
     # @return [SpanContext] the extracted SpanContext or nil if none could be found
     def extract(format, carrier)
       case format
-      when OpenTracing::FORMAT_TEXT_MAP
-        trace_id = carrier['trace-id']
-        parent_id = carrier['parent-id']
-        span_id = carrier['span-id']
-
-        if trace_id && span_id
-          SpanContext.new(trace_id: trace_id, parent_id: parent_id, span_id: span_id)
-        else
-          nil
-        end
       when OpenTracing::FORMAT_RACK
-        trace_id = carrier['HTTP_X_TRACE_ID']
-        parent_id = carrier['HTTP_X_TRACE_PARENT_ID']
-        span_id = carrier['HTTP_X_TRACE_SPAN_ID']
+        trace_id = carrier['HTTP_X_B3_TRACEID']
+        parent_id = carrier['HTTP_X_B3_PARENTSPANID']
+        span_id = carrier['HTTP_X_B3_SPANID']
+        sampled = carrier['HTTP_X_B3_SAMPLED'] == '1'
 
         if trace_id && span_id
-          SpanContext.new(trace_id: trace_id, parent_id: parent_id, span_id: span_id)
+          SpanContext.new(
+            trace_id: trace_id,
+            parent_id: parent_id,
+            span_id: span_id,
+            sampled: sampled
+          )
         else
           nil
         end

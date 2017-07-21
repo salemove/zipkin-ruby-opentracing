@@ -68,24 +68,49 @@ describe Zipkin::Tracer do
   end
 
   describe '#inject' do
-    let(:operation_name) { 'operator-name' }
-    let(:span) { tracer.start_span(operation_name) }
-    let(:span_context) { span.context }
+    let(:span_context) do
+      Zipkin::SpanContext.new(
+        trace_id: trace_id,
+        parent_id: parent_id,
+        span_id: span_id,
+        sampled: sampled
+      )
+    end
+    let(:trace_id) { 'trace-id' }
+    let(:parent_id) { 'trace-id' }
+    let(:span_id) { 'trace-id' }
+    let(:sampled) { true }
     let(:carrier) { {} }
 
-    context 'when FORMAT_TEXT_MAP' do
-      before { tracer.inject(span_context, OpenTracing::FORMAT_TEXT_MAP, carrier) }
+    context 'when FORMAT_RACK' do
+      before { tracer.inject(span_context, OpenTracing::FORMAT_RACK, carrier) }
 
-      it 'sets trace-id' do
-        expect(carrier['trace-id']).to eq(span_context.trace_id)
+      it 'sets X-B3-TraceId' do
+        expect(carrier['X-B3-TraceId']).to eq(trace_id)
       end
 
-      it 'sets parent-id' do
-        expect(carrier['parent-id']).to eq(span_context.parent_id)
+      it 'sets X-B3-TraceId' do
+        expect(carrier['X-B3-ParentSpanId']).to eq(parent_id)
       end
 
-      it 'sets span-id' do
-        expect(carrier['span-id']).to eq(span_context.span_id)
+      it 'sets X-B3-TraceId' do
+        expect(carrier['X-B3-SpanId']).to eq(span_id)
+      end
+
+      context 'when sampled' do
+        let(:sampled) { true }
+
+        it 'sets X-B3-Sampled to 1' do
+          expect(carrier['X-B3-Sampled']).to eq('1')
+        end
+      end
+
+      context 'when not sampled' do
+        let(:sampled) { false }
+
+        it 'sets X-B3-Sampled to 0' do
+          expect(carrier['X-B3-Sampled']).to eq('0')
+        end
       end
     end
   end
@@ -95,69 +120,32 @@ describe Zipkin::Tracer do
     let(:trace_id) { 'trace-id' }
     let(:parent_id) { 'parent-id' }
     let(:span_id) { 'span-id' }
-
-    context 'when FORMAT_TEXT_MAP' do
-      let(:carrier) do
-        {
-          'trace-id' => trace_id,
-          'parent-id' => parent_id,
-          'span-id' => span_id
-        }
-      end
-      let(:span_context) { tracer.extract(OpenTracing::FORMAT_TEXT_MAP, carrier) }
-
-      it 'has trace-id' do
-        expect(span_context.trace_id).to eq(trace_id)
-      end
-
-      it 'has parent-id' do
-        expect(span_context.parent_id).to eq(parent_id)
-      end
-
-      it 'has span-id' do
-        expect(span_context.span_id).to eq(span_id)
-      end
-
-      context 'when trace-id missing' do
-        let(:trace_id) { nil }
-
-        it 'returns nil' do
-          expect(span_context).to eq(nil)
-        end
-      end
-
-      context 'when span-id missing' do
-        let(:span_id) { nil }
-
-        it 'returns nil' do
-          expect(span_context).to eq(nil)
-        end
-      end
-    end
+    let(:sampled) { '1' }
 
     context 'when FORMAT_RACK' do
       let(:carrier) do
         {
-          'HTTP_X_TRACE_ID' => trace_id,
-          'HTTP_X_TRACE_PARENT_ID' => parent_id,
-          'HTTP_X_TRACE_SPAN_ID' => span_id
+          'HTTP_X_B3_TRACEID' => trace_id,
+          'HTTP_X_B3_PARENTSPANID' => parent_id,
+          'HTTP_X_B3_SPANID' => span_id,
+          'HTTP_X_B3_SAMPLED' => sampled
         }
       end
       let(:span_context) { tracer.extract(OpenTracing::FORMAT_RACK, carrier) }
 
-      it 'has trace-id' do
+      it 'has trace id' do
         expect(span_context.trace_id).to eq(trace_id)
       end
 
-      it 'has parent-id' do
+      it 'has parent id' do
         expect(span_context.parent_id).to eq(parent_id)
       end
 
-      it 'has span-id' do
+      it 'has span id' do
         expect(span_context.span_id).to eq(span_id)
       end
 
-      context 'when X-Trace-Id missing' do
+      context 'when X-B3-TraceId is missing' do
         let(:trace_id) { nil }
 
         it 'returns nil' do
@@ -165,7 +153,7 @@ describe Zipkin::Tracer do
         end
       end
 
-      context 'when X-Trace-Span-Id missing' do
+      context 'when X-B3-SpanId is missing' do
         let(:span_id) { nil }
 
         it 'returns nil' do

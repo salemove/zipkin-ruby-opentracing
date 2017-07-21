@@ -6,11 +6,13 @@ RSpec.describe Zipkin::SpanContext do
       described_class.new(
         trace_id: trace_id,
         parent_id: nil,
-        span_id: parent_span_id
+        span_id: parent_span_id,
+        sampled: sampled
       )
     end
     let(:trace_id) { 'trace-id' }
     let(:parent_span_id) { 'span-id' }
+    let(:sampled) { true }
 
     it 'has same trace ID' do
       context = described_class.create_from_parent_context(parent)
