@@ -1,3 +1,5 @@
+require 'socket'
+
 module Zipkin
   class Endpoint
     LOCAL_IP = Socket.ip_address_list.detect(&:ipv4_private?).ip_address
