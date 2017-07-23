@@ -26,5 +26,4 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'opentracing', '~> 0.3'
   spec.add_dependency 'faraday'
   spec.add_dependency 'faraday_middleware'
-  spec.add_dependency 'sucker_punch', '~> 2.0'
 end

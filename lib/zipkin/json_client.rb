@@ -1,10 +1,11 @@
 require 'faraday'
 require 'faraday_middleware'
-require 'sucker_punch'
 
 module Zipkin
   class JsonClient
-    def initialize(url)
+    def initialize(url:, collector:, flush_interval:)
+      @collector = collector
+      @flush_interval = flush_interval
       @faraday = Faraday.new(url: url) do |faraday|
         faraday.request :json
         faraday.request :retry, max: 3, interval: 10, backoff_factor: 2
@@ -12,22 +13,31 @@ module Zipkin
       end
     end
 
-    def send_span(payload)
-      SpanSender.perform_async(payload: payload, faraday: @faraday)
+    def start
+      @thread = Thread.new do
+        loop do
+          emit_batch(@collector.retrieve)
+          sleep @flush_interval
+        end
+      end
     end
 
-    class SpanSender
-      include SuckerPunch::Job
-      workers 4
+    def stop
+      @thread.terminate if @thread
+      emit_batch(@collector.retrieve)
+    end
 
-      def perform(payload:, faraday:)
-        response = faraday.post '/api/v1/spans' do |req|
-          req.body = [payload]
-        end
+    private
 
-        if response.status != 202
-          STDERR.puts(response.body)
-        end
+    def emit_batch(spans)
+      return if spans.empty?
+
+      response = @faraday.post '/api/v1/spans' do |req|
+        req.body = spans
+      end
+
+      if response.status != 202
+        STDERR.puts(response.body)
       end
     end
   end

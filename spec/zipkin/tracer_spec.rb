@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 describe Zipkin::Tracer do
-  let(:tracer) { described_class.new(client, service_name) }
+  let(:tracer) { described_class.new(collector, service_name) }
   let(:service_name) { 'service-name' }
-  let(:client) { spy(Zipkin::JsonClient) }
+  let(:collector) { spy(Zipkin::Collector) }
 
   describe '#start_span' do
     let(:operation_name) { 'operator-name' }

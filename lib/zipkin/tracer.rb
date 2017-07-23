@@ -6,17 +6,30 @@ require_relative 'carrier'
 require_relative 'trace_id'
 require_relative 'json_client'
 require_relative 'endpoint'
+require_relative 'collector'
 
 module Zipkin
   class Tracer
-    def self.build(url:, service_name:)
-      client = JsonClient.new(url)
-      new(client, service_name)
+    DEFAULT_FLUSH_INTERVAL = 10
+
+    def self.build(url:, service_name:, flush_interval: DEFAULT_FLUSH_INTERVAL)
+      collector = Collector.new(Endpoint.local_endpoint(service_name))
+      sender = JsonClient.new(
+        url: url,
+        collector: collector,
+        flush_interval: flush_interval
+      )
+      sender.start
+      new(collector, sender)
     end
 
-    def initialize(client, service_name)
-      @client = client
-      @local_endpoint = Endpoint.local_endpoint(service_name)
+    def initialize(collector, sender)
+      @collector = collector
+      @sender = sender
+    end
+
+    def stop
+      @sender.stop
     end
 
     # Starts a new span.
@@ -37,7 +50,10 @@ module Zipkin
         else
           SpanContext.create_parent_context
         end
-      Span.new(context, operation_name, @client, start_time: start_time, tags: tags, local_endpoint: @local_endpoint)
+      Span.new(context, operation_name, @collector, {
+        start_time: start_time,
+        tags: tags
+      })
     end
 
     # Inject a SpanContext into the given carrier

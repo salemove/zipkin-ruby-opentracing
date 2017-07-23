@@ -38,3 +38,8 @@ outer_span.finish
 
 puts "Finishing..."
 sleep 3
+
+tracer1.stop
+tracer2.stop
+
+puts "Finished"

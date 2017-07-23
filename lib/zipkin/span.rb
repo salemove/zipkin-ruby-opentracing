@@ -2,22 +2,21 @@ module Zipkin
   class Span
     attr_accessor :operation_name
 
-    attr_reader :context
+    attr_reader :context, :start_time, :tags
 
     # Creates a new {Span}
     #
     # @param context [SpanContext] the context of the span
-    # @param context [String] the operation name
-    # @param client [Faraday] faraday instace for making http requests
+    # @param operation_name [String] the operation name
+    # @param collector [Collector] the span collector
     #
     # @return [Span] a new Span
-    def initialize(context, operation_name, client, start_time: Time.now, tags: {}, local_endpoint:)
+    def initialize(context, operation_name, collector, start_time: Time.now, tags: {})
       @context = context
       @operation_name = operation_name
-      @client = client
+      @collector = collector
       @start_time = start_time
       @tags = tags
-      @local_endpoint = local_endpoint
     end
 
     # Set a tag value on this span
@@ -59,40 +58,7 @@ module Zipkin
     #
     # @param end_time [Time] custom end time, if not now
     def finish(end_time: Time.now)
-      finish_ts = (end_time.to_f * 1_000_000).to_i
-      start_ts = (@start_time.to_f * 1_000_000).to_i
-      duration = finish_ts - start_ts
-      is_server = ['server', 'consumer'].include?(@tags['span.kind'] || 'server')
-
-      @client.send_span(
-        traceId: @context.trace_id,
-        id: @context.span_id,
-        parentId: @context.parent_id,
-        name: @operation_name,
-        timestamp: start_ts,
-        duration: duration,
-        annotations: [
-          {
-            timestamp: start_ts,
-            value: is_server ? 'sr' : 'cs',
-            endpoint: @local_endpoint
-          },
-          {
-            timestamp: finish_ts,
-            value: is_server ? 'ss': 'cr',
-            endpoint: @local_endpoint
-          }
-        ],
-        binaryAnnotations: build_binary_annotations
-      )
-    end
-
-    private
-
-    def build_binary_annotations
-      @tags.map do |name, value|
-        {key: name, value: value.to_s}
-      end
+      @collector.send_span(self, end_time)
     end
   end
 end
