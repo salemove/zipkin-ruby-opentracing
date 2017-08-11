@@ -39,6 +39,8 @@ module Zipkin
       if response.code != 202
         STDERR.puts(response.body)
       end
+    rescue => e
+      STDERR.puts("Error emitting spans batch: #{e.message}\n#{e.backtrace.join("\n")}")
     end
   end
 end
