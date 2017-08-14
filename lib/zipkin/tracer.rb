@@ -63,6 +63,11 @@ module Zipkin
     # @param carrier [Carrier] A carrier object of the type dictated by the specified `format`
     def inject(span_context, format, carrier)
       case format
+      when OpenTracing::FORMAT_TEXT_MAP
+        carrier['trace-id'] = span_context.trace_id
+        carrier['parent-id'] = span_context.parent_id
+        carrier['span-id'] = span_context.span_id
+        carrier['sampled'] = span_context.sampled? ? '1' : '0'
       when OpenTracing::FORMAT_RACK
         carrier['X-B3-TraceId'] = span_context.trace_id
         carrier['X-B3-ParentSpanId'] = span_context.parent_id
@@ -80,24 +85,36 @@ module Zipkin
     # @return [SpanContext] the extracted SpanContext or nil if none could be found
     def extract(format, carrier)
       case format
+      when OpenTracing::FORMAT_TEXT_MAP
+        trace_id = carrier['trace-id']
+        parent_id = carrier['parent-id']
+        span_id = carrier['span-id']
+        sampled = carrier['sampled'] == '1'
+
+        create_span_context(trace_id, span_id, parent_id, sampled)
       when OpenTracing::FORMAT_RACK
         trace_id = carrier['HTTP_X_B3_TRACEID']
         parent_id = carrier['HTTP_X_B3_PARENTSPANID']
         span_id = carrier['HTTP_X_B3_SPANID']
         sampled = carrier['HTTP_X_B3_SAMPLED'] == '1'
 
-        if trace_id && span_id
-          SpanContext.new(
-            trace_id: trace_id,
-            parent_id: parent_id,
-            span_id: span_id,
-            sampled: sampled
-          )
-        else
-          nil
-        end
+        create_span_context(trace_id, span_id, parent_id, sampled)
       else
         STDERR.puts "Logasm::Tracer with format #{format} is not supported yet"
+        nil
+      end
+    end
+
+    private
+    def create_span_context(trace_id, span_id, parent_id, sampled)
+      if trace_id && span_id
+        SpanContext.new(
+          trace_id: trace_id,
+          parent_id: parent_id,
+          span_id: span_id,
+          sampled: sampled
+        )
+      else
         nil
       end
     end

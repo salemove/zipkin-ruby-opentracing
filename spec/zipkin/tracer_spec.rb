@@ -82,6 +82,38 @@ describe Zipkin::Tracer do
     let(:sampled) { true }
     let(:carrier) { {} }
 
+    context 'when FORMAT_TEXT_MAP' do
+      before { tracer.inject(span_context, OpenTracing::FORMAT_TEXT_MAP, carrier) }
+
+      it 'sets trace-id' do
+        expect(carrier['trace-id']).to eq(trace_id)
+      end
+
+      it 'sets parent-id' do
+        expect(carrier['parent-id']).to eq(parent_id)
+      end
+
+      it 'sets span-id' do
+        expect(carrier['span-id']).to eq(span_id)
+      end
+
+      context 'when sampled' do
+        let(:sampled) { true }
+
+        it 'sets sampled to 1' do
+          expect(carrier['sampled']).to eq('1')
+        end
+      end
+
+      context 'when not sampled' do
+        let(:sampled) { false }
+
+        it 'sets sampled to 0' do
+          expect(carrier['sampled']).to eq('0')
+        end
+      end
+    end
+
     context 'when FORMAT_RACK' do
       before { tracer.inject(span_context, OpenTracing::FORMAT_RACK, carrier) }
 
@@ -89,11 +121,11 @@ describe Zipkin::Tracer do
         expect(carrier['X-B3-TraceId']).to eq(trace_id)
       end
 
-      it 'sets X-B3-TraceId' do
+      it 'sets X-B3-ParentSpanId' do
         expect(carrier['X-B3-ParentSpanId']).to eq(parent_id)
       end
 
-      it 'sets X-B3-TraceId' do
+      it 'sets X-B3-SpanId' do
         expect(carrier['X-B3-SpanId']).to eq(span_id)
       end
 
@@ -121,6 +153,46 @@ describe Zipkin::Tracer do
     let(:parent_id) { 'parent-id' }
     let(:span_id) { 'span-id' }
     let(:sampled) { '1' }
+
+    context 'when FORMAT_TEXT_MAP' do
+      let(:carrier) do
+        {
+          'trace-id' => trace_id,
+          'parent-id' => parent_id,
+          'span-id' => span_id,
+          'sampled' => sampled
+        }
+      end
+      let(:span_context) { tracer.extract(OpenTracing::FORMAT_TEXT_MAP, carrier) }
+
+      it 'has trace id' do
+        expect(span_context.trace_id).to eq(trace_id)
+      end
+
+      it 'has parent id' do
+        expect(span_context.parent_id).to eq(parent_id)
+      end
+
+      it 'has span id' do
+        expect(span_context.span_id).to eq(span_id)
+      end
+
+      context 'when trace-id is missing' do
+        let(:trace_id) { nil }
+
+        it 'returns nil' do
+          expect(span_context).to eq(nil)
+        end
+      end
+
+      context 'when span-id is missing' do
+        let(:span_id) { nil }
+
+        it 'returns nil' do
+          expect(span_context).to eq(nil)
+        end
+      end
+    end
 
     context 'when FORMAT_RACK' do
       let(:carrier) do
