@@ -2,7 +2,10 @@ require 'socket'
 
 module Zipkin
   class Endpoint
-    LOCAL_IP = Socket.ip_address_list.detect(&:ipv4_private?).ip_address
+    LOCAL_IP = (
+      Socket.ip_address_list.detect(&:ipv4_private?) ||
+      Socket.ip_address_list.reverse.detect(&:ipv4?)
+    ).ip_address
 
     def self.local_endpoint(service_name)
       {
