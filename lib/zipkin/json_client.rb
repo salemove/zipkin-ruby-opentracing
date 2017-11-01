@@ -30,6 +30,7 @@ module Zipkin
       return if spans.empty?
 
       http = Net::HTTP.new(@spans_uri.host, @spans_uri.port)
+      http.use_ssl = @spans_uri.scheme == 'https'
       request = Net::HTTP::Post.new(@spans_uri.request_uri, {
         'Content-Type' => 'application/json'
       })
