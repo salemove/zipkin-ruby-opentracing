@@ -86,22 +86,22 @@ describe Zipkin::Tracer do
       before { tracer.inject(span_context, OpenTracing::FORMAT_TEXT_MAP, carrier) }
 
       it 'sets trace-id' do
-        expect(carrier['trace-id']).to eq(trace_id)
+        expect(carrier['x-b3-traceid']).to eq(trace_id)
       end
 
       it 'sets parent-id' do
-        expect(carrier['parent-id']).to eq(parent_id)
+        expect(carrier['x-b3-parentspanid']).to eq(parent_id)
       end
 
       it 'sets span-id' do
-        expect(carrier['span-id']).to eq(span_id)
+        expect(carrier['x-b3-spanid']).to eq(span_id)
       end
 
       context 'when sampled' do
         let(:sampled) { true }
 
-        it 'sets sampled to 1' do
-          expect(carrier['sampled']).to eq('1')
+        it 'sets sampled to true' do
+          expect(carrier['x-b3-sampled']).to eq('1')
         end
       end
 
@@ -109,7 +109,7 @@ describe Zipkin::Tracer do
         let(:sampled) { false }
 
         it 'sets sampled to 0' do
-          expect(carrier['sampled']).to eq('0')
+          expect(carrier['x-b3-sampled']).to eq('0')
         end
       end
     end
@@ -157,10 +157,10 @@ describe Zipkin::Tracer do
     context 'when FORMAT_TEXT_MAP' do
       let(:carrier) do
         {
-          'trace-id' => trace_id,
-          'parent-id' => parent_id,
-          'span-id' => span_id,
-          'sampled' => sampled
+          'x-b3-traceid' => trace_id,
+          'x-b3-parentspanid' => parent_id,
+          'x-b3-spanid' => span_id,
+          'x-b3-sampled' => sampled
         }
       end
       let(:span_context) { tracer.extract(OpenTracing::FORMAT_TEXT_MAP, carrier) }

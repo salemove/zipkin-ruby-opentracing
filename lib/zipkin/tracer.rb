@@ -65,7 +65,7 @@ module Zipkin
       case format
       when OpenTracing::FORMAT_TEXT_MAP
         carrier['x-b3-traceid'] = span_context.trace_id
-        carrier['x-b3-spanparentid'] = span_context.parent_id
+        carrier['x-b3-parentspanid'] = span_context.parent_id
         carrier['x-b3-spanid'] = span_context.span_id
         carrier['x-b3-sampled'] = span_context.sampled? ? '1' : '0'
       when OpenTracing::FORMAT_RACK
