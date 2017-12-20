@@ -64,10 +64,10 @@ module Zipkin
     def inject(span_context, format, carrier)
       case format
       when OpenTracing::FORMAT_TEXT_MAP
-        carrier['trace-id'] = span_context.trace_id
-        carrier['parent-id'] = span_context.parent_id
-        carrier['span-id'] = span_context.span_id
-        carrier['sampled'] = span_context.sampled? ? '1' : '0'
+        carrier['x-b3-traceid'] = span_context.trace_id
+        carrier['x-b3-spanparentid'] = span_context.parent_id
+        carrier['x-b3-spanid'] = span_context.span_id
+        carrier['x-b3-sampled'] = span_context.sampled? ? '1' : '0'
       when OpenTracing::FORMAT_RACK
         carrier['X-B3-TraceId'] = span_context.trace_id
         carrier['X-B3-ParentSpanId'] = span_context.parent_id
@@ -86,10 +86,10 @@ module Zipkin
     def extract(format, carrier)
       case format
       when OpenTracing::FORMAT_TEXT_MAP
-        trace_id = carrier['trace-id']
-        parent_id = carrier['parent-id']
-        span_id = carrier['span-id']
-        sampled = carrier['sampled'] == '1'
+        trace_id = carrier['x-b3-traceid']
+        parent_id = carrier['x-b3-parentspanid']
+        span_id = carrier['x-b3-spanid']
+        sampled = carrier['x-b3-sampled'] == '1'
 
         create_span_context(trace_id, span_id, parent_id, sampled)
       when OpenTracing::FORMAT_RACK
