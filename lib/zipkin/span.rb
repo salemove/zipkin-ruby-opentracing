@@ -50,7 +50,18 @@ module Zipkin
     # @param event [String] event name for the log
     # @param timestamp [Time] time of the log
     # @param fields [Hash] Additional information to log
+    #
+    # @deprecated Use {#log_kv} instead.
     def log(event: nil, timestamp: Time.now, **fields)
+      warn 'Span#log is deprecated. Please use Span#log_kv instead.'
+      nil
+    end
+
+    # Add a log entry to this span
+    #
+    # @param timestamp [Time] time of the log
+    # @param fields [Hash] Additional information to log
+    def log_kv(timestamp: Time.now, **fields)
       nil
     end
 
