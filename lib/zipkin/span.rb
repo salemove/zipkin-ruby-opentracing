@@ -2,7 +2,7 @@ module Zipkin
   class Span
     attr_accessor :operation_name
 
-    attr_reader :context, :start_time, :tags
+    attr_reader :context, :start_time, :tags, :logs
 
     # Creates a new {Span}
     #
@@ -11,12 +11,13 @@ module Zipkin
     # @param collector [Collector] the span collector
     #
     # @return [Span] a new Span
-    def initialize(context, operation_name, collector, start_time: Time.now, tags: {})
+    def initialize(context, operation_name, collector, start_time: Time.now, tags: {}, logs: [])
       @context = context
       @operation_name = operation_name
       @collector = collector
       @start_time = start_time
       @tags = tags
+      @logs = logs
     end
 
     # Set a tag value on this span
@@ -45,13 +46,28 @@ module Zipkin
       nil
     end
 
-    # Add a log entry to this span
+    # @deprecated Use {#log_kv} instead.
+    # Reason: event is an optional standard log field defined in spec and not required.  Also,
+    # method name {#log_kv} is more consistent with other language implementations such as Python and Go.
     #
+    # Add a log entry to this span
     # @param event [String] event name for the log
     # @param timestamp [Time] time of the log
     # @param fields [Hash] Additional information to log
     def log(event: nil, timestamp: Time.now, **fields)
+      warn "Span#log is deprecated.  Please use Span#log_kv instead."
       nil
+    end
+
+    # Add a log entry to this span
+    # @param timestamp [Time] time of the log
+    # @param fields [Hash] Additional information to log
+    def log_kv(timestamp: Time.now, **fields)
+      @logs.push({
+        timestamp: timestamp,
+        fields: fields,
+      })
+      self
     end
 
     # Finish the {Span}
