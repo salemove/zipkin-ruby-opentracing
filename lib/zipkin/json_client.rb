@@ -31,16 +31,17 @@ module Zipkin
 
       http = Net::HTTP.new(@spans_uri.host, @spans_uri.port)
       http.use_ssl = @spans_uri.scheme == 'https'
-      request = Net::HTTP::Post.new(@spans_uri.request_uri, {
+      request = Net::HTTP::Post.new(
+        @spans_uri.request_uri,
         'Content-Type' => 'application/json'
-      })
+      )
       request.body = JSON.dump(spans)
       response = http.request(request)
 
       if response.code != 202
         STDERR.puts(response.body)
       end
-    rescue => e
+    rescue StandardError => e
       STDERR.puts("Error emitting spans batch: #{e.message}\n#{e.backtrace.join("\n")}")
     end
   end

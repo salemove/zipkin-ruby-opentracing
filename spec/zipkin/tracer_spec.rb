@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Zipkin::Tracer do
   let(:tracer) { described_class.new(collector, service_name) }
   let(:service_name) { 'service-name' }
-  let(:collector) { spy(Zipkin::Collector) }
+  let(:collector) { instance_spy(Zipkin::Collector) }
 
   describe '#start_span' do
     let(:operation_name) { 'operator-name' }
@@ -11,13 +11,13 @@ describe Zipkin::Tracer do
     context 'when a root span' do
       let(:span) { tracer.start_span(operation_name) }
 
-      context 'span context' do
+      describe 'span context' do
         it 'has span_id' do
-          expect(span.context.span_id).to_not be_nil
+          expect(span.context.span_id).not_to be_nil
         end
 
         it 'has trace_id' do
-          expect(span.context.trace_id).to_not be_nil
+          expect(span.context.trace_id).not_to be_nil
         end
 
         it 'does not have parent_id' do
@@ -31,17 +31,17 @@ describe Zipkin::Tracer do
       let(:span) { tracer.start_span(operation_name, child_of: root_span.context) }
       let(:root_operation_name) { 'root-operation-name' }
 
-      context 'span context' do
+      describe 'span context' do
         it 'has span_id' do
-          expect(span.context.span_id).to_not be_nil
+          expect(span.context.span_id).not_to be_nil
         end
 
         it 'has trace_id' do
-          expect(span.context.trace_id).to_not be_nil
+          expect(span.context.trace_id).not_to be_nil
         end
 
         it 'does not have parent_id' do
-          expect(span.context.parent_id).to_not be_nil
+          expect(span.context.parent_id).not_to be_nil
         end
       end
     end
@@ -51,17 +51,17 @@ describe Zipkin::Tracer do
       let(:span) { tracer.start_span(operation_name, child_of: root_span) }
       let(:root_operation_name) { 'root-operation-name' }
 
-      context 'span context' do
+      describe 'span context' do
         it 'has span_id' do
-          expect(span.context.span_id).to_not be_nil
+          expect(span.context.span_id).not_to be_nil
         end
 
         it 'has trace_id' do
-          expect(span.context.trace_id).to_not be_nil
+          expect(span.context.trace_id).not_to be_nil
         end
 
         it 'does not have parent_id' do
-          expect(span.context.parent_id).to_not be_nil
+          expect(span.context.parent_id).not_to be_nil
         end
       end
     end

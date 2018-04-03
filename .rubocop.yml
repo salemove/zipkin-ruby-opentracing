@@ -1,0 +1,25 @@
+require: rubocop-rspec
+
+Style/Documentation:
+  Enabled: no
+
+Style/IfUnlessModifier:
+  Enabled: no
+
+RSpec/NestedGroups:
+  Max: 4
+
+Metrics/BlockLength:
+  Enabled: no
+
+Metrics/MethodLength:
+  Enabled: no
+
+Metrics/AbcSize:
+  Enabled: no
+
+Lint/UnusedMethodArgument:
+  Enabled: no
+
+Metrics/LineLength:
+  Max: 120

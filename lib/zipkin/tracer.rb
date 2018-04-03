@@ -50,10 +50,13 @@ module Zipkin
         else
           SpanContext.create_parent_context
         end
-      Span.new(context, operation_name, @collector, {
+      Span.new(
+        context,
+        operation_name,
+        @collector,
         start_time: start_time,
         tags: tags
-      })
+      )
     end
 
     # Inject a SpanContext into the given carrier
@@ -106,17 +109,16 @@ module Zipkin
     end
 
     private
+
     def create_span_context(trace_id, span_id, parent_id, sampled)
-      if trace_id && span_id
-        SpanContext.new(
-          trace_id: trace_id,
-          parent_id: parent_id,
-          span_id: span_id,
-          sampled: sampled
-        )
-      else
-        nil
-      end
+      return nil if !trace_id || !span_id
+
+      SpanContext.new(
+        trace_id: trace_id,
+        parent_id: parent_id,
+        span_id: span_id,
+        sampled: sampled
+      )
     end
   end
 end

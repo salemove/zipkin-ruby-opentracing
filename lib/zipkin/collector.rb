@@ -15,7 +15,7 @@ module Zipkin
       finish_ts = (end_time.to_f * 1_000_000).to_i
       start_ts = (span.start_time.to_f * 1_000_000).to_i
       duration = finish_ts - start_ts
-      is_server = ['server', 'consumer'].include?(span.tags['span.kind'] || 'server')
+      is_server = %w[server consumer].include?(span.tags['span.kind'] || 'server')
 
       @buffer << {
         traceId: span.context.trace_id,
@@ -32,7 +32,7 @@ module Zipkin
           },
           {
             timestamp: finish_ts,
-            value: is_server ? 'ss': 'cr',
+            value: is_server ? 'ss' : 'cr',
             endpoint: @local_endpoint
           }
         ],
@@ -44,7 +44,7 @@ module Zipkin
 
     def build_binary_annotations(span)
       span.tags.map do |name, value|
-        {key: name, value: value.to_s}
+        { key: name, value: value.to_s }
       end
     end
 
