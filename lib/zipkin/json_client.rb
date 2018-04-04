@@ -4,10 +4,11 @@ require 'json'
 
 module Zipkin
   class JsonClient
-    def initialize(url:, collector:, flush_interval:)
+    def initialize(url:, collector:, flush_interval:, logger: Logger.new(STDOUT))
       @collector = collector
       @flush_interval = flush_interval
       @spans_uri = URI.parse("#{url}/api/v1/spans")
+      @logger = logger
     end
 
     def start
@@ -39,10 +40,10 @@ module Zipkin
       response = http.request(request)
 
       if response.code != 202
-        STDERR.puts(response.body)
+        @logger.error("Received bad response from Zipkin. status: #{response.code}, body: #{response.body.inspect}")
       end
     rescue StandardError => e
-      STDERR.puts("Error emitting spans batch: #{e.message}\n#{e.backtrace.join("\n")}")
+      @logger.error("Error emitting spans batch: #{e.message}\n#{e.backtrace.join("\n")}")
     end
   end
 end
