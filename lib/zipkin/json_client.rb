@@ -39,7 +39,7 @@ module Zipkin
       request.body = JSON.dump(spans)
       response = http.request(request)
 
-      if response.code != 202
+      if response.code != '202'
         @logger.error("Received bad response from Zipkin. status: #{response.code}, body: #{response.body.inspect}")
       end
     rescue StandardError => e
