@@ -1,4 +1,5 @@
 require 'opentracing'
+require 'logger'
 
 require_relative 'span'
 require_relative 'span_context'
@@ -12,20 +13,22 @@ module Zipkin
   class Tracer
     DEFAULT_FLUSH_INTERVAL = 10
 
-    def self.build(url:, service_name:, flush_interval: DEFAULT_FLUSH_INTERVAL)
+    def self.build(url:, service_name:, flush_interval: DEFAULT_FLUSH_INTERVAL, logger: Logger.new(STDOUT))
       collector = Collector.new(Endpoint.local_endpoint(service_name))
       sender = JsonClient.new(
         url: url,
         collector: collector,
-        flush_interval: flush_interval
+        flush_interval: flush_interval,
+        logger: logger
       )
       sender.start
-      new(collector, sender)
+      new(collector, sender, logger: logger)
     end
 
-    def initialize(collector, sender)
+    def initialize(collector, sender, logger: Logger.new(STDOUT))
       @collector = collector
       @sender = sender
+      @logger = logger
     end
 
     def stop
@@ -77,7 +80,7 @@ module Zipkin
         carrier['X-B3-SpanId'] = span_context.span_id
         carrier['X-B3-Sampled'] = span_context.sampled? ? '1' : '0'
       else
-        STDERR.puts "Logasm::Tracer with format #{format} is not supported yet"
+        @logger.error "Logasm::Tracer with format #{format} is not supported yet"
       end
     end
 
@@ -103,7 +106,7 @@ module Zipkin
 
         create_span_context(trace_id, span_id, parent_id, sampled)
       else
-        STDERR.puts "Logasm::Tracer with format #{format} is not supported yet"
+        @logger.error "Logasm::Tracer with format #{format} is not supported yet"
         nil
       end
     end
