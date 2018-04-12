@@ -1,5 +1,8 @@
 require 'thread'
 
+require_relative './collector/timestamp'
+require_relative './collector/log_annotations'
+
 module Zipkin
   class Collector
     def initialize(local_endpoint)
@@ -12,8 +15,8 @@ module Zipkin
     end
 
     def send_span(span, end_time)
-      finish_ts = (end_time.to_f * 1_000_000).to_i
-      start_ts = (span.start_time.to_f * 1_000_000).to_i
+      finish_ts = Timestamp.create(end_time)
+      start_ts = Timestamp.create(span.start_time)
       duration = finish_ts - start_ts
       is_server = %w[server consumer].include?(span.tags['span.kind'] || 'server')
 
@@ -24,7 +27,7 @@ module Zipkin
         name: span.operation_name,
         timestamp: start_ts,
         duration: duration,
-        annotations: [
+        annotations: LogAnnotations.build(span, @local_endpoint) + [
           {
             timestamp: start_ts,
             value: is_server ? 'sr' : 'cs',
