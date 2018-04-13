@@ -33,6 +33,8 @@ downstream_span = tracer2.start_span(
   child_of: inner_span,
   tags: { 'span.kind' => 'server' }
 )
+downstream_span.log_kv(event: 'custom-event')
+downstream_span.log_kv(foo: 'bar', baz: 'buz')
 sleep 0.5
 downstream_span.finish
 

@@ -2,7 +2,7 @@ module Zipkin
   class Span
     attr_accessor :operation_name
 
-    attr_reader :context, :start_time, :tags
+    attr_reader :context, :start_time, :tags, :logs
 
     # Creates a new {Span}
     #
@@ -17,6 +17,7 @@ module Zipkin
       @collector = collector
       @start_time = start_time
       @tags = tags
+      @logs = []
     end
 
     # Set a tag value on this span
@@ -47,14 +48,10 @@ module Zipkin
 
     # Add a log entry to this span
     #
-    # @param event [String] event name for the log
-    # @param timestamp [Time] time of the log
-    # @param fields [Hash] Additional information to log
-    #
     # @deprecated Use {#log_kv} instead.
-    def log(event: nil, timestamp: Time.now, **fields)
+    def log(*args)
       warn 'Span#log is deprecated. Please use Span#log_kv instead.'
-      nil
+      log_kv(*args)
     end
 
     # Add a log entry to this span
@@ -62,6 +59,7 @@ module Zipkin
     # @param timestamp [Time] time of the log
     # @param fields [Hash] Additional information to log
     def log_kv(timestamp: Time.now, **fields)
+      @logs << fields.merge(timestamp: timestamp)
       nil
     end
 
