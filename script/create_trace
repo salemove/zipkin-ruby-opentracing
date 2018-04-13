@@ -12,7 +12,9 @@ tracer2 = Zipkin::Tracer.build(url: url, service_name: 'downstream-service')
 
 outer_span = tracer1.start_span(
   'receive request',
-  tags: { 'span.kind' => 'server' }
+  tags: {
+    'span.kind' => 'server'
+  }
 )
 sleep 1
 
