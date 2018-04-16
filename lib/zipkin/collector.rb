@@ -18,37 +18,28 @@ module Zipkin
       finish_ts = Timestamp.create(end_time)
       start_ts = Timestamp.create(span.start_time)
       duration = finish_ts - start_ts
-      is_server = %w[server consumer].include?(span.tags['span.kind'] || 'server')
 
       @buffer << {
         traceId: span.context.trace_id,
         id: span.context.span_id,
         parentId: span.context.parent_id,
         name: span.operation_name,
+        kind: (span.tags['span.kind'] || 'SERVER').upcase,
         timestamp: start_ts,
         duration: duration,
-        annotations: LogAnnotations.build(span, @local_endpoint) + [
-          {
-            timestamp: start_ts,
-            value: is_server ? 'sr' : 'cs',
-            endpoint: @local_endpoint
-          },
-          {
-            timestamp: finish_ts,
-            value: is_server ? 'ss' : 'cr',
-            endpoint: @local_endpoint
-          }
-        ],
-        binaryAnnotations: build_binary_annotations(span)
+        debug: false,
+        shared: false,
+        localEndpoint: @local_endpoint,
+        remoteEndpoint: Endpoint.remote_endpoint(span),
+        annotations: LogAnnotations.build(span),
+        tags: build_tags(span)
       }
     end
 
     private
 
-    def build_binary_annotations(span)
-      span.tags.map do |name, value|
-        { key: name, value: value.to_s }
-      end
+    def build_tags(span)
+      span.tags.map { |key, value| [key.to_s, value.to_s] }.to_h
     end
 
     class Buffer

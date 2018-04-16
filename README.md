@@ -2,6 +2,10 @@
 
 OpenTracing Tracer implementation for Zipkin in Ruby
 
+## Requirements
+
+Zipkin version >= 2.0.0
+
 ## Installation
 
 Add this line to your application's Gemfile:

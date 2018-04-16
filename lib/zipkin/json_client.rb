@@ -7,7 +7,7 @@ module Zipkin
     def initialize(url:, collector:, flush_interval:, logger: Logger.new(STDOUT))
       @collector = collector
       @flush_interval = flush_interval
-      @spans_uri = URI.parse("#{url}/api/v1/spans")
+      @spans_uri = URI.parse("#{url}/api/v2/spans")
       @logger = logger
     end
 
