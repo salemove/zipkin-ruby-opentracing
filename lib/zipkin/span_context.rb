@@ -28,5 +28,16 @@ module Zipkin
     def sampled?
       @sampled
     end
+
+    # NOTE: This method is not defined in OpenTracing Ruby spec. Use with
+    # caution.
+    def to_h
+      {
+        span_id: @span_id,
+        parent_id: @parent_id,
+        trace_id: @trace_id,
+        sampled: @sampled
+      }
+    end
   end
 end

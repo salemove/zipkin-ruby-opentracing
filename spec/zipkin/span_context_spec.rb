@@ -29,4 +29,16 @@ RSpec.describe Zipkin::SpanContext do
       expect(context.span_id).not_to eq(parent_span_id)
     end
   end
+
+  describe '#to_h' do
+    it 'returns information about the span context' do
+      context = described_class.create_parent_context
+      expect(context.to_h).to eq(
+        span_id: context.span_id,
+        parent_id: context.parent_id,
+        trace_id: context.trace_id,
+        sampled: context.sampled?
+      )
+    end
+  end
 end
