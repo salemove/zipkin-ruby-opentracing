@@ -34,8 +34,8 @@ module Zipkin
         req.body = spans
       end
 
-      if response.code != '202'
-        @logger.error("Received bad response from Zipkin. status: #{response.code}, body: #{response.body.inspect}")
+      if response.status != 202
+        @logger.error("Received bad response from Zipkin. status: #{response.status}, body: #{response.body.inspect}")
       end
     rescue StandardError => e
       @logger.error("Error emitting spans batch: #{e.message}\n#{e.backtrace.join("\n")}")
