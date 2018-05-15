@@ -8,7 +8,7 @@ RSpec.describe Zipkin::Collector::LogAnnotations do
       message = 'some message'
       span.log_kv(event: message)
       expect(described_class.build(span)).to include(
-        timestamp: instance_of(Integer),
+        timestamp: instance_of(Fixnum),
         value: message
       )
     end
@@ -18,7 +18,7 @@ RSpec.describe Zipkin::Collector::LogAnnotations do
     it 'converts fields into string form' do
       span.log_kv(foo: 'bar', baz: 'buz')
       expect(described_class.build(span)).to include(
-        timestamp: instance_of(Integer),
+        timestamp: instance_of(Fixnum),
         value: 'foo=bar baz=buz'
       )
     end

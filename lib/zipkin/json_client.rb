@@ -29,18 +29,13 @@ module Zipkin
 
     def emit_batch(spans)
       return if spans.empty?
+      response = Faraday.post(@spans_uri) do |req|
+        req.headers['Content-Type'] = 'application/json'
+        req.body = JSON.dump(spans)
+      end
 
-      http = Net::HTTP.new(@spans_uri.host, @spans_uri.port)
-      http.use_ssl = @spans_uri.scheme == 'https'
-      request = Net::HTTP::Post.new(
-        @spans_uri.request_uri,
-        'Content-Type' => 'application/json'
-      )
-      request.body = JSON.dump(spans)
-      response = http.request(request)
-
-      if response.code != '202'
-        @logger.error("Received bad response from Zipkin. status: #{response.code}, body: #{response.body.inspect}")
+      if response.status != 202
+        @logger.error("Received bad response from Zipkin. status: #{response.status}, body: #{response.body.inspect}")
       end
     rescue StandardError => e
       @logger.error("Error emitting spans batch: #{e.message}\n#{e.backtrace.join("\n")}")
