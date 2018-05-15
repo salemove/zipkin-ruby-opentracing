@@ -31,7 +31,7 @@ module Zipkin
       return if spans.empty?
       response = Faraday.post(@spans_uri) do |req|
         req.headers['Content-Type'] = 'application/json'
-        req.body = spans
+        req.body = JSON.dump(spans)
       end
 
       if response.status != 202
