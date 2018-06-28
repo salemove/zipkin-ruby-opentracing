@@ -20,9 +20,16 @@ gem 'zipkin'
 require 'zipkin/tracer'
 OpenTracing.global_tracer = Zipkin::Tracer.build(url: 'http://localhost:9411', service_name: 'echo')
 
-span = OpenTracing.start_span('span name')
-span.finish
+OpenTracing.start_active_span('span name') do
+  # do something
+
+  OpenTracing.start_active_span('inner span name') do
+    # do something else
+  end
+end
 ```
+
+See [opentracing-ruby](https://github.com/opentracing/opentracing-ruby) for more examples.
 
 ## Development
 
