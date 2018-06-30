@@ -7,19 +7,24 @@ module Zipkin
         # needed so that it would be possible to create multiple tracers in one
         # thread (mostly useful for testing purposes)
         @scope_identifier = ScopeIdentifier.generate
-        Thread.current[@scope_identifier] = []
       end
 
       def push(scope)
-        Thread.current[@scope_identifier] << scope
+        store << scope
       end
 
       def pop
-        Thread.current[@scope_identifier].pop
+        store.pop
       end
 
       def peek
-        Thread.current[@scope_identifier].last
+        store.last
+      end
+
+      private
+
+      def store
+        Thread.current[@scope_identifier] ||= []
       end
     end
   end
