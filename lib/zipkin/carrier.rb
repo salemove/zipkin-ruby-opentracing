@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Zipkin
   # Carriers are used for inject and extract operations. A carrier should be a
   # Hash or hash-like object. At a minimum, it should implement `[]`, `[]=`, and

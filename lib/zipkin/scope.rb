@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Zipkin
   # Scope represents an OpenTracing Scope
   #

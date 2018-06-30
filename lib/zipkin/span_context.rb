@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Zipkin
   # SpanContext holds the data for a span that gets inherited to child spans
   class SpanContext

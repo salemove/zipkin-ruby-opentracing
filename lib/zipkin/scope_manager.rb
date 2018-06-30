@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'scope_manager/scope_stack'
 require_relative 'scope_manager/scope_identifier'
 
