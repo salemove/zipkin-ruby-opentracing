@@ -27,6 +27,7 @@ module Zipkin
       finish_ts = Timestamp.create(end_time)
       start_ts = Timestamp.create(span.start_time)
       duration = finish_ts - start_ts
+      return unless span.context.sampled?
 
       @buffer << {
         traceId: span.context.trace_id,
