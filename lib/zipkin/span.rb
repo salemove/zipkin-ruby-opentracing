@@ -28,7 +28,8 @@ module Zipkin
     # @param value [String, Numeric, Boolean] the value of the tag. If it's not
     # a String, Numeric, or Boolean it will be encoded with to_s
     def set_tag(key, value)
-      @tags = @tags.merge(key => value)
+      sanitized_value = valid_tag_value?(value) ? value : value.to_s
+      @tags = @tags.merge(key.to_sym => sanitized_value)
     end
 
     # Set a baggage item on the span
@@ -70,6 +71,15 @@ module Zipkin
     # @param end_time [Time] custom end time, if not now
     def finish(end_time: Time.now)
       @collector.send_span(self, end_time)
+    end
+
+    private
+
+    def valid_tag_value?(value)
+      value.is_a?(String) ||
+        value.is_a?(Numeric) ||
+        value.is_a?(TrueClass) ||
+        value.is_a?(FalseClass)
     end
   end
 end

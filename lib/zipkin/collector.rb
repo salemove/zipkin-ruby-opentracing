@@ -7,6 +7,13 @@ require_relative './collector/log_annotations'
 
 module Zipkin
   class Collector
+    OT_KIND_TO_ZIPKIN_KIND = {
+      'server' => 'SERVER',
+      'client' => 'CLIENT',
+      'producer' => 'PRODUCER',
+      'consumer' => 'CONSUMER'
+    }.freeze
+
     def initialize(local_endpoint)
       @buffer = Buffer.new
       @local_endpoint = local_endpoint
@@ -26,7 +33,7 @@ module Zipkin
         id: span.context.span_id,
         parentId: span.context.parent_id,
         name: span.operation_name,
-        kind: (span.tags['span.kind'] || 'SERVER').upcase,
+        kind: OT_KIND_TO_ZIPKIN_KIND[span.tags[:'span.kind'] || 'server'],
         timestamp: start_ts,
         duration: duration,
         debug: false,
@@ -34,14 +41,8 @@ module Zipkin
         localEndpoint: @local_endpoint,
         remoteEndpoint: Endpoint.remote_endpoint(span),
         annotations: LogAnnotations.build(span),
-        tags: build_tags(span)
+        tags: span.tags
       }
-    end
-
-    private
-
-    def build_tags(span)
-      span.tags.map { |key, value| [key.to_s, value.to_s] }.to_h
     end
 
     class Buffer
