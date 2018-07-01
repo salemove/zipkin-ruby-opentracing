@@ -4,7 +4,7 @@ module Zipkin
   class Span
     attr_accessor :operation_name
 
-    attr_reader :context, :start_time, :tags, :logs
+    attr_reader :context, :start_time, :tags, :logs, :references
 
     # Creates a new {Span}
     #
@@ -13,13 +13,21 @@ module Zipkin
     # @param collector [Collector] the span collector
     #
     # @return [Span] a new Span
-    def initialize(context, operation_name, collector, start_time: Time.now, tags: {})
+    def initialize(
+      context,
+      operation_name,
+      collector,
+      start_time: Time.now,
+      tags: {},
+      references: nil
+    )
       @context = context
       @operation_name = operation_name
       @collector = collector
       @start_time = start_time
       @tags = tags
       @logs = []
+      @references = references
     end
 
     # Set a tag value on this span

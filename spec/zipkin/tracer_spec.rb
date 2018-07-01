@@ -26,7 +26,7 @@ describe Zipkin::Tracer do
       end
     end
 
-    context 'when a child span context is provided' do
+    context 'when a child_of span context is provided' do
       let(:root_span) { tracer.start_span(root_operation_name) }
       let(:span) { tracer.start_span(operation_name, child_of: root_span.context) }
       let(:root_operation_name) { 'root-operation-name' }
@@ -46,9 +46,30 @@ describe Zipkin::Tracer do
       end
     end
 
-    context 'when a child span is provided' do
+    context 'when a child_of span is provided' do
       let(:root_span) { tracer.start_span(root_operation_name) }
       let(:span) { tracer.start_span(operation_name, child_of: root_span) }
+      let(:root_operation_name) { 'root-operation-name' }
+
+      describe 'span context' do
+        it 'has span_id' do
+          expect(span.context.span_id).not_to be_nil
+        end
+
+        it 'has trace_id' do
+          expect(span.context.trace_id).not_to be_nil
+        end
+
+        it 'does not have parent_id' do
+          expect(span.context.parent_id).not_to be_nil
+        end
+      end
+    end
+
+    context 'when a parent context is provided using references' do
+      let(:root_span) { tracer.start_span(root_operation_name) }
+      let(:span) { tracer.start_span(operation_name, references: references) }
+      let(:references) { [OpenTracing::Reference.child_of(root_span.context)] }
       let(:root_operation_name) { 'root-operation-name' }
 
       describe 'span context' do
@@ -89,7 +110,7 @@ describe Zipkin::Tracer do
       end
     end
 
-    context 'when a child span context is provided' do
+    context 'when a child_of span context is provided' do
       let(:root_span) { tracer.start_span(root_operation_name) }
       let(:scope) { tracer.start_active_span(operation_name, child_of: root_span.context) }
       let(:span) { scope.span }
@@ -110,10 +131,32 @@ describe Zipkin::Tracer do
       end
     end
 
-    context 'when a child span is provided' do
+    context 'when a child_of span is provided' do
       let(:root_span) { tracer.start_span(root_operation_name) }
       let(:scope) { tracer.start_active_span(operation_name, child_of: root_span) }
       let(:span) { scope.span }
+      let(:root_operation_name) { 'root-operation-name' }
+
+      describe 'span context' do
+        it 'has span_id' do
+          expect(span.context.span_id).not_to be_nil
+        end
+
+        it 'has trace_id' do
+          expect(span.context.trace_id).not_to be_nil
+        end
+
+        it 'does not have parent_id' do
+          expect(span.context.parent_id).not_to be_nil
+        end
+      end
+    end
+
+    context 'when a parent context is provided using references' do
+      let(:root_span) { tracer.start_span(root_operation_name) }
+      let(:scope) { tracer.start_active_span(operation_name, references: references) }
+      let(:span) { scope.span }
+      let(:references) { [OpenTracing::Reference.child_of(root_span.context)] }
       let(:root_operation_name) { 'root-operation-name' }
 
       describe 'span context' do

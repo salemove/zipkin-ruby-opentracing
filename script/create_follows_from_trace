@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+
+require 'bundler'
+Bundler.setup
+
+require 'zipkin/tracer'
+
+url = ENV['ZIPKIN_URL'] || 'http://localhost:9411'
+
+tracer1 = Zipkin::Tracer.build(url: url, service_name: 'test-service')
+tracer2 = Zipkin::Tracer.build(url: url, service_name: 'downstream-service')
+
+rpc_span = tracer1.start_span(
+  'receive request',
+  tags: { 'span.kind' => 'server' }
+)
+sleep 0.1
+rpc_span.log_kv(event: 'woop di doop', count: 5)
+sleep 1
+
+async_request_span = tracer1.start_span(
+  'request async action',
+  references: [
+    OpenTracing::Reference.child_of(rpc_span.context)
+  ],
+  tags: { 'span.kind' => 'producer' }
+)
+sleep 0.1
+
+async_request_span.finish
+rpc_span.finish
+
+sleep 0.5
+
+async_span = tracer2.start_span(
+  'async span started after rpc span',
+  references: [
+    OpenTracing::Reference.follows_from(async_request_span.context)
+  ],
+  tags: {
+    'span.kind' => 'consumer',
+    'peer.service' => 'downstream-service'
+  }
+)
+sleep 0.3 # emulate network delay
+async_span.finish
+
+tracer1.stop
+tracer2.stop
+
+puts 'Finished'
