@@ -75,7 +75,7 @@ module Zipkin
     def start_span(operation_name,
                    child_of: nil,
                    start_time: Time.now,
-                   tags: {},
+                   tags: nil,
                    references: nil,
                    ignore_active_scope: false,
                    **)
@@ -90,7 +90,7 @@ module Zipkin
         @collector,
         start_time: start_time,
         references: references,
-        tags: tags
+        tags: tags || {}
       )
     end
 

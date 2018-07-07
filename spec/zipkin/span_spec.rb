@@ -26,4 +26,26 @@ RSpec.describe Zipkin::Span do
       expect(span.logs[0]).to eq(log)
     end
   end
+
+  describe '#set_tag' do
+    let(:span) { described_class.new(nil, 'operation_name', nil) }
+
+    it 'converts nil value to empty string' do
+      key = :tag_key
+      span.set_tag(key, nil)
+      expect(span.tags.fetch(key)).to eq('')
+    end
+  end
+
+  describe '#initialize' do
+    context 'with tags' do
+      it 'converts nil tag value to empty string' do
+        key = :tag_key
+        span = described_class.new(
+          nil, 'operation_name', nil, tags: { key => nil }
+        )
+        expect(span.tags.fetch(key)).to eq('')
+      end
+    end
+  end
 end

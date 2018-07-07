@@ -25,9 +25,11 @@ module Zipkin
       @operation_name = operation_name
       @collector = collector
       @start_time = start_time
-      @tags = tags
+      @tags = {}
       @logs = []
       @references = references
+
+      tags.each(&method(:set_tag))
     end
 
     # Set a tag value on this span
