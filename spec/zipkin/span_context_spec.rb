@@ -28,6 +28,24 @@ RSpec.describe Zipkin::SpanContext do
       context = described_class.create_from_parent_context(parent)
       expect(context.span_id).not_to eq(parent_span_id)
     end
+
+    context 'when sampler returns true' do
+      let(:sampler) { Zipkin::Samplers::Const.new(true) }
+
+      it 'marks context as sampled' do
+        context = described_class.create_parent_context(sampler)
+        expect(context).to be_sampled
+      end
+    end
+
+    context 'when sampler returns false' do
+      let(:sampler) { Zipkin::Samplers::Const.new(false) }
+
+      it 'marks context as not sampled' do
+        context = described_class.create_parent_context(sampler)
+        expect(context).not_to be_sampled
+      end
+    end
   end
 
   describe '#to_h' do

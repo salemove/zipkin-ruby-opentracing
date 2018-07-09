@@ -12,12 +12,17 @@ require_relative 'endpoint'
 require_relative 'collector'
 require_relative 'scope_manager'
 require_relative 'scope'
+require_relative 'samplers'
 
 module Zipkin
   class Tracer
     DEFAULT_FLUSH_INTERVAL = 10
 
-    def self.build(url:, service_name:, flush_interval: DEFAULT_FLUSH_INTERVAL, logger: Logger.new(STDOUT))
+    def self.build(url:,
+                   service_name:,
+                   flush_interval: DEFAULT_FLUSH_INTERVAL,
+                   logger: Logger.new(STDOUT),
+                   sampler: Samplers::Const.new(true))
       collector = Collector.new(Endpoint.local_endpoint(service_name))
       sender = JsonClient.new(
         url: url,
@@ -26,14 +31,15 @@ module Zipkin
         logger: logger
       )
       sender.start
-      new(collector, sender, logger: logger)
+      new(collector, sender, logger: logger, sampler: sampler)
     end
 
-    def initialize(collector, sender, logger: Logger.new(STDOUT))
+    def initialize(collector, sender, logger: Logger.new(STDOUT), sampler:)
       @collector = collector
       @sender = sender
       @logger = logger
       @scope_manager = ScopeManager.new
+      @sampler = sampler
     end
 
     def stop
@@ -220,7 +226,7 @@ module Zipkin
       if context
         SpanContext.create_from_parent_context(context)
       else
-        SpanContext.create_parent_context
+        SpanContext.create_parent_context(@sampler)
       end
     end
 

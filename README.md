@@ -31,6 +31,16 @@ end
 
 See [opentracing-ruby](https://github.com/opentracing/opentracing-ruby) for more examples.
 
+### Samplers
+
+#### Const sampler
+
+`Const` sampler always makes the same decision for new traces depending on the initialization value. Set `sampler` to: `Zipkin::Samplers::Const.new(true)` to mark all new traces as sampled.
+
+#### Probabilistic sampler
+
+`Probabilistic` sampler samples traces with probability equal to `rate` (must be between 0.0 and 1.0). Set `sampler` to `Zipkin::Samplers::Probabilistic.new(rate: 0.1)` to mark 10% of new traces as sampled.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
