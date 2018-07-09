@@ -85,11 +85,9 @@ module Zipkin
 
     private
 
+    # Zipkin supports only strings and numbers
     def valid_tag_value?(value)
-      value.is_a?(String) ||
-        value.is_a?(Numeric) ||
-        value.is_a?(TrueClass) ||
-        value.is_a?(FalseClass)
+      value.is_a?(String) || value.is_a?(Numeric)
     end
   end
 end

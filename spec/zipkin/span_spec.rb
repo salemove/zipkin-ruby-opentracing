@@ -46,6 +46,14 @@ RSpec.describe Zipkin::Span do
         )
         expect(span.tags.fetch(key)).to eq('')
       end
+
+      it 'convers boolean values to string' do
+        span = described_class.new(
+          nil, 'operation_name', nil, tags: { foo: false, bar: true }
+        )
+        expect(span.tags.fetch(:foo)).to eq('false')
+        expect(span.tags.fetch(:bar)).to eq('true')
+      end
     end
   end
 end
