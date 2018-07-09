@@ -3,9 +3,10 @@
 module Zipkin
   # SpanContext holds the data for a span that gets inherited to child spans
   class SpanContext
-    def self.create_parent_context
+    def self.create_parent_context(sampler = Samplers::Const.new(true))
       trace_id = TraceId.generate
-      new(trace_id: trace_id, span_id: trace_id, sampled: true)
+      sampled = sampler.sample?(trace_id: trace_id)
+      new(trace_id: trace_id, span_id: trace_id, sampled: sampled)
     end
 
     def self.create_from_parent_context(span_context)
