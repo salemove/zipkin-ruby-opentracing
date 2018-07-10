@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = 'zipkin'
-  spec.version       = '1.5.2'
+  spec.version       = '1.6.0'
   spec.authors       = ['SaleMove TechMovers']
   spec.email         = ['techmovers@salemove.com']
 
