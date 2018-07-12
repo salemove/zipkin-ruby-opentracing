@@ -8,9 +8,9 @@ require 'zipkin/tracer'
 url = ENV['ZIPKIN_URL'] || 'http://localhost:9411'
 
 tracer1 = Zipkin::Tracer.build(url: url, service_name: 'test-service')
-tracer2 = Zipkin::Tracer.build(url: url, service_name: 'downstream-service')
+tracer2 = Zipkin::Tracer.build(url: url, service_name: 'downstream-service-1')
 
-outer_span = tracer1.start_span(
+root_span = tracer1.start_span(
   'receive request',
   tags: {
     'span.kind' => 'server'
@@ -18,34 +18,50 @@ outer_span = tracer1.start_span(
 )
 sleep 1
 
-inner_span = tracer1.start_span(
-  'fetch info from downstream',
-  child_of: outer_span,
+fetch_info_from_service1_span = tracer1.start_span(
+  'fetch info from service 1',
+  child_of: root_span,
   tags: {
     'span.kind' => 'client',
-    'peer.service' => 'downstream-service',
-    'peer.ipv4' => '6.6.6.6',
+    'peer.ipv4' => '2.2.2.2',
     'peer.port' => 443
   }
 )
 sleep 0.3 # emulate network delay
 
-downstream_span = tracer2.start_span(
-  'downstream operation',
-  child_of: inner_span,
-  tags: { 'span.kind' => 'server' }
+service1_span = tracer2.start_span(
+  'service 1 operation',
+  child_of: fetch_info_from_service1_span,
+  tags: {
+    'span.kind' => 'server',
+    'peer.ipv4' => '1.1.1.1',
+    'peer.port' => 443
+  }
 )
-downstream_span.log_kv(event: 'custom-event')
-downstream_span.log_kv(foo: 'bar', baz: 'buz')
+service1_span.log_kv(event: 'custom-event')
+service1_span.log_kv(foo: 'bar', baz: 'buz')
 sleep 0.5
-downstream_span.finish
+service1_span.finish
 
 sleep 0.2 # emulate network delay
 
-inner_span.finish
+fetch_info_from_service1_span.finish
+
+fetch_info_from_service2_span = tracer1.start_span(
+  'fetch info from service 2 which does not have tracing',
+  child_of: root_span,
+  tags: {
+    'span.kind' => 'client',
+    'peer.service' => 'downstream-service-2',
+    'peer.ipv4' => '3.3.3.3',
+    'peer.port' => 443
+  }
+)
+sleep 0.3 # emulate network delay
+fetch_info_from_service2_span.finish
 
 sleep 0.1 # doing something with fetched info
-outer_span.finish
+root_span.finish
 
 puts 'Finishing...'
 sleep 3
