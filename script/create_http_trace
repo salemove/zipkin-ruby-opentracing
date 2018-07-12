@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+
+require 'bundler'
+Bundler.setup
+
+require 'zipkin/tracer'
+
+url = ENV['ZIPKIN_URL'] || 'http://localhost:9411'
+
+tracer1 = Zipkin::Tracer.build(url: url, service_name: 'user-service')
+tracer2 = Zipkin::Tracer.build(url: url, service_name: 'name-service')
+
+root_span = tracer1.start_span(
+  'GET /users/:id',
+  tags: {
+    'span.kind' => 'server',
+    'http.method' => 'get',
+    'http.url' => 'http://example.com/users/5'
+  }
+)
+sleep 1
+
+fetch_name_span = tracer1.start_span(
+  'get',
+  child_of: root_span,
+  tags: {
+    'span.kind' => 'client',
+    'http.method' => 'get',
+    'http.url' => 'GET /users/5/name'
+  }
+)
+sleep 0.3 # emulate network delay
+
+name_service_span = tracer2.start_span(
+  'GET /users/:id/name',
+  child_of: fetch_name_span,
+  tags: {
+    'span.kind' => 'server',
+    'http.method' => 'get',
+    'http.url' => 'http://example.com/users/5/name'
+  }
+)
+sleep 0.5
+name_service_span.finish
+
+sleep 0.2 # emulate network delay
+fetch_name_span.finish
+
+sleep 0.1 # doing something with fetched info
+root_span.finish
+
+puts 'Finishing...'
+sleep 3
+
+tracer1.stop
+tracer2.stop
+
+puts 'Finished'
