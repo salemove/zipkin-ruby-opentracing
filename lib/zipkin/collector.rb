@@ -4,6 +4,7 @@ require 'thread'
 
 require_relative './collector/timestamp'
 require_relative './collector/log_annotations'
+require_relative './collector/buffer'
 
 module Zipkin
   class Collector
@@ -45,27 +46,6 @@ module Zipkin
         tags: span.tags
       }
     end
-
-    class Buffer
-      def initialize
-        @buffer = []
-        @mutex = Mutex.new
-      end
-
-      def <<(element)
-        @mutex.synchronize do
-          @buffer << element
-          true
-        end
-      end
-
-      def retrieve
-        @mutex.synchronize do
-          elements = @buffer.dup
-          @buffer.clear
-          elements
-        end
-      end
     end
   end
 end
