@@ -2,12 +2,12 @@
 
 require 'net/http'
 require 'uri'
-require 'json'
 
 module Zipkin
-  class JsonClient
-    def initialize(url:, collector:, flush_interval:, logger: Logger.new(STDOUT))
+  class HTTPClient
+    def initialize(url:, collector:, encoder:, flush_interval:, logger: Logger.new(STDOUT))
       @collector = collector
+      @encoder = encoder
       @flush_interval = flush_interval
       @spans_uri = URI.parse("#{url}/api/v2/spans")
       @logger = logger
@@ -36,9 +36,9 @@ module Zipkin
       http.use_ssl = @spans_uri.scheme == 'https'
       request = Net::HTTP::Post.new(
         @spans_uri.request_uri,
-        'Content-Type' => 'application/json'
+        'Content-Type' => @encoder.content_type
       )
-      request.body = JSON.dump(spans)
+      request.body = @encoder.encode(spans)
       response = http.request(request)
 
       if response.code != '202'

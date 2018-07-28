@@ -7,12 +7,13 @@ require_relative 'span'
 require_relative 'span_context'
 require_relative 'carrier'
 require_relative 'trace_id'
-require_relative 'json_client'
+require_relative 'http_client'
 require_relative 'endpoint'
 require_relative 'collector'
 require_relative 'scope_manager'
 require_relative 'scope'
 require_relative 'samplers'
+require_relative 'encoders'
 
 module Zipkin
   class Tracer
@@ -22,11 +23,14 @@ module Zipkin
                    service_name:,
                    flush_interval: DEFAULT_FLUSH_INTERVAL,
                    logger: Logger.new(STDOUT),
-                   sampler: Samplers::Const.new(true))
-      collector = Collector.new(Endpoint.local_endpoint(service_name))
-      sender = JsonClient.new(
+                   sampler: Samplers::Const.new(true),
+                   encoder: Encoders::JsonEncoder)
+      collector = Collector.new
+      encoder = encoder.new(Endpoint.local_endpoint(service_name))
+      sender = HTTPClient.new(
         url: url,
         collector: collector,
+        encoder: encoder,
         flush_interval: flush_interval,
         logger: logger
       )

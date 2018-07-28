@@ -1,8 +1,7 @@
 require 'spec_helper'
 
 RSpec.describe Zipkin::Collector do
-  let(:collector) { described_class.new(local_endpoint) }
-  let(:local_endpoint) { Zipkin::Endpoint.local_endpoint('local') }
+  let(:collector) { described_class.new }
   let(:operation_name) { 'op-name' }
 
   describe '#send_span' do
@@ -19,7 +18,7 @@ RSpec.describe Zipkin::Collector do
       let(:sampled) { true }
 
       it 'buffers the span' do
-        collector.send_span(span, Time.now)
+        collector.send_span(span)
         expect(collector.retrieve).not_to be_empty
       end
     end
@@ -28,7 +27,7 @@ RSpec.describe Zipkin::Collector do
       let(:sampled) { false }
 
       it 'does not buffer the span' do
-        collector.send_span(span, Time.now)
+        collector.send_span(span)
         expect(collector.retrieve).to be_empty
       end
     end

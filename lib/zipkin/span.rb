@@ -4,7 +4,7 @@ module Zipkin
   class Span
     attr_accessor :operation_name
 
-    attr_reader :context, :start_time, :tags, :logs, :references
+    attr_reader :context, :start_time, :end_time, :tags, :logs, :references
 
     # Creates a new {Span}
     #
@@ -80,7 +80,8 @@ module Zipkin
     #
     # @param end_time [Time] custom end time, if not now
     def finish(end_time: Time.now)
-      @collector.send_span(self, end_time)
+      @end_time = end_time
+      @collector.send_span(self)
     end
 
     private
