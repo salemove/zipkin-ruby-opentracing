@@ -9,7 +9,7 @@ require_relative 'carrier'
 require_relative 'trace_id'
 require_relative 'http_client'
 require_relative 'endpoint'
-require_relative 'collector'
+require_relative 'async_reporter'
 require_relative 'scope_manager'
 require_relative 'scope'
 require_relative 'samplers'
@@ -25,29 +25,18 @@ module Zipkin
                    logger: Logger.new(STDOUT),
                    sampler: Samplers::Const.new(true),
                    encoder: Encoders::JsonEncoder)
-      collector = Collector.new
       encoder = encoder.new(Endpoint.local_endpoint(service_name))
-      sender = HTTPClient.new(
-        url: url,
-        collector: collector,
-        encoder: encoder,
-        flush_interval: flush_interval,
-        logger: logger
-      )
-      sender.start
-      new(collector, sender, logger: logger, sampler: sampler)
+      sender = HTTPClient.new(url: url, encoder: encoder, logger: logger)
+      reporter = AsyncReporter.create(sender: sender, flush_interval: flush_interval)
+      new(reporter, sender, logger: logger, sampler: sampler)
     end
 
-    def initialize(collector, sender, logger: Logger.new(STDOUT), sampler:)
-      @collector = collector
+    def initialize(reporter, sender, logger: Logger.new(STDOUT), sampler:)
+      @reporter = reporter
       @sender = sender
       @logger = logger
       @scope_manager = ScopeManager.new
       @sampler = sampler
-    end
-
-    def stop
-      @sender.stop
     end
 
     # @return [ScopeManager] the current ScopeManager, which may be a no-op but
@@ -97,7 +86,7 @@ module Zipkin
       Span.new(
         context,
         operation_name,
-        @collector,
+        @reporter,
         start_time: start_time,
         references: references,
         tags: tags || {}

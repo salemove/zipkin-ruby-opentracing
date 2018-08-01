@@ -7,8 +7,8 @@ require 'zipkin/tracer'
 
 url = ENV['ZIPKIN_URL'] || 'http://localhost:9411'
 
-tracer1 = Zipkin::Tracer.build(url: url, service_name: 'test-service')
-tracer2 = Zipkin::Tracer.build(url: url, service_name: 'downstream-service')
+tracer1 = Zipkin::Tracer.build(url: url, service_name: 'test-service', flush_interval: 1)
+tracer2 = Zipkin::Tracer.build(url: url, service_name: 'downstream-service', flush_interval: 1)
 
 rpc_span = tracer1.start_span(
   'receive request',
@@ -44,8 +44,5 @@ async_span = tracer2.start_span(
 )
 sleep 0.3 # emulate network delay
 async_span.finish
-
-tracer1.stop
-tracer2.stop
 
 puts 'Finished'

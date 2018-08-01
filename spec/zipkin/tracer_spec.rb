@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 describe Zipkin::Tracer do
-  let(:tracer) { described_class.new(collector, service_name, sampler: sampler) }
+  let(:tracer) { described_class.new(reporter, service_name, sampler: sampler) }
   let(:service_name) { 'service-name' }
-  let(:collector) { instance_spy(Zipkin::Collector) }
+  let(:reporter) { instance_spy(Zipkin::AsyncReporter) }
   let(:sampler) { Zipkin::Samplers::Const.new(true) }
 
   describe '#start_span' do

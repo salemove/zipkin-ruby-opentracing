@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Zipkin
-  class Collector
+  class AsyncReporter
     class Buffer
       def initialize
         @buffer = []

@@ -10,20 +10,20 @@ module Zipkin
     #
     # @param context [SpanContext] the context of the span
     # @param operation_name [String] the operation name
-    # @param collector [Collector] the span collector
+    # @param reporter [#report] the span reporter
     #
     # @return [Span] a new Span
     def initialize(
       context,
       operation_name,
-      collector,
+      reporter,
       start_time: Time.now,
       tags: {},
       references: nil
     )
       @context = context
       @operation_name = operation_name
-      @collector = collector
+      @reporter = reporter
       @start_time = start_time
       @tags = {}
       @logs = []
@@ -81,7 +81,7 @@ module Zipkin
     # @param end_time [Time] custom end time, if not now
     def finish(end_time: Time.now)
       @end_time = end_time
-      @collector.send_span(self)
+      @reporter.report(self)
     end
 
     private
