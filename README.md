@@ -4,7 +4,7 @@ OpenTracing Tracer implementation for Zipkin in Ruby
 
 ## Requirements
 
-Zipkin version >= 2.0.0
+Zipkin version >= 2.0.0. Zipkin >= 2.8 is required to use protobuf encoding.
 
 ## Installation
 
@@ -18,7 +18,11 @@ gem 'zipkin'
 
 ```ruby
 require 'zipkin/tracer'
-OpenTracing.global_tracer = Zipkin::Tracer.build(url: 'http://localhost:9411', service_name: 'echo')
+OpenTracing.global_tracer = Zipkin::Tracer.build(
+  url: 'http://localhost:9411',
+  encoder: Zipkin::Encoders::ProtobufEncoder,
+  service_name: 'echo'
+)
 
 OpenTracing.start_active_span('span name') do
   # do something
@@ -30,6 +34,32 @@ end
 ```
 
 See [opentracing-ruby](https://github.com/opentracing/opentracing-ruby) for more examples.
+
+### Encoders
+
+This library supports two encoders: json (default) and protobuf.
+
+Using json encoder:
+
+```ruby
+require 'zipkin/tracer'
+OpenTracing.global_tracer = Zipkin::Tracer.build(
+  url: 'http://localhost:9411',
+  encoder: Zipkin::Encoders::JsonEncoder,
+  service_name: 'echo'
+)
+```
+
+Using protobuf encoder:
+
+```ruby
+require 'zipkin/tracer'
+OpenTracing.global_tracer = Zipkin::Tracer.build(
+  url: 'http://localhost:9411',
+  encoder: Zipkin::Encoders::ProtobufEncoder,
+  service_name: 'echo'
+)
+```
 
 ### Samplers
 

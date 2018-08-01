@@ -2,7 +2,7 @@
 
 module Zipkin
   module Encoders
-    class JsonEncoder
+    module Helpers
       module LogAnnotations
         module Fields
           TIMESTAMP = 'timestamp'.freeze

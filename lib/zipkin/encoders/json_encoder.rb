@@ -2,8 +2,8 @@
 
 require 'json'
 
-require_relative 'json_encoder/timestamp'
-require_relative 'json_encoder/log_annotations'
+require_relative 'helpers/timestamp'
+require_relative 'helpers/log_annotations'
 
 module Zipkin
   module Encoders
@@ -56,8 +56,8 @@ module Zipkin
       private
 
       def serialize(span)
-        finish_ts = Timestamp.create(span.end_time)
-        start_ts = Timestamp.create(span.start_time)
+        finish_ts = Helpers::Timestamp.create(span.end_time)
+        start_ts = Helpers::Timestamp.create(span.start_time)
         duration = finish_ts - start_ts
 
         {
@@ -72,7 +72,7 @@ module Zipkin
           Fields::SHARED => false,
           Fields::LOCAL_ENDPOINT => @local_endpoint,
           Fields::REMOTE_ENDPOINT => serialize_endpoint(Endpoint.remote_endpoint(span)),
-          Fields::ANNOTATIONS => LogAnnotations.build(span),
+          Fields::ANNOTATIONS => Helpers::LogAnnotations.build(span),
           Fields::TAGS => span.tags
         }
       end

@@ -2,7 +2,7 @@
 
 module Zipkin
   module Encoders
-    class JsonEncoder
+    module Helpers
       module Timestamp
         def self.create(time)
           (time.to_f * 1_000_000).to_i

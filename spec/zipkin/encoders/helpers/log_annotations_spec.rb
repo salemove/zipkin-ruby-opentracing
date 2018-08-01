@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-RSpec.describe Zipkin::Encoders::JsonEncoder::LogAnnotations do
+RSpec.describe Zipkin::Encoders::Helpers::LogAnnotations do
   let(:span) { Zipkin::Span.new(nil, 'operation_name', nil) }
 
   context 'when log includes only event and timestamp' do
