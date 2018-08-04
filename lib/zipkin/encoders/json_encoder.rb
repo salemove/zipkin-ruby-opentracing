@@ -41,6 +41,7 @@ module Zipkin
       end
 
       def initialize(local_endpoint)
+        @adapter = defined?(Oj) ? OjAdapter : JsonAdapter
         @local_endpoint = serialize_endpoint(local_endpoint)
       end
 
@@ -49,7 +50,7 @@ module Zipkin
       end
 
       def encode(spans)
-        JSON.dump(spans.map(&method(:serialize)))
+        @adapter.dump(spans.map(&method(:serialize)))
       end
 
       private
@@ -85,6 +86,18 @@ module Zipkin
           Fields::Endpoint::IPV6 => endpoint.ipv6,
           Fields::Endpoint::PORT => endpoint.port
         }
+      end
+
+      module OjAdapter
+        def self.dump(payload)
+          Oj.dump(payload, mode: :object)
+        end
+      end
+
+      module JsonAdapter
+        def self.dump(payload)
+          JSON.dump(payload)
+        end
       end
     end
   end
