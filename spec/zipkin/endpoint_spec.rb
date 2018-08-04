@@ -11,25 +11,25 @@ RSpec.describe Zipkin::Endpoint do
     it 'includes service name' do
       service_name = 'service-name'
       span.set_tag('peer.service', service_name)
-      expect(remote_endpoint(span)).to include(serviceName: service_name)
+      expect(remote_endpoint(span).service_name).to eq(service_name)
     end
 
     it 'includes ipv4 address' do
       ipv4 = '8.7.6.5'
       span.set_tag('peer.ipv4', ipv4)
-      expect(remote_endpoint(span)).to include(ipv4: ipv4)
+      expect(remote_endpoint(span).ipv4).to eq(ipv4)
     end
 
     it 'includes ipv6 address' do
       ipv6 = '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
       span.set_tag('peer.ipv6', ipv6)
-      expect(remote_endpoint(span)).to include(ipv6: ipv6)
+      expect(remote_endpoint(span).ipv6).to eq(ipv6)
     end
 
     it 'includes port' do
       port = 3000
       span.set_tag('peer.port', port)
-      expect(remote_endpoint(span)).to include(port: port)
+      expect(remote_endpoint(span).port).to eq(port)
     end
   end
 
@@ -54,7 +54,7 @@ RSpec.describe Zipkin::Endpoint do
       before { span.set_tag('span.kind', 'producer') }
 
       it 'returns broker as service name' do
-        expect(remote_endpoint(span)).to eq(serviceName: 'broker')
+        expect(remote_endpoint(span).service_name).to eq('broker')
       end
     end
 
@@ -62,7 +62,7 @@ RSpec.describe Zipkin::Endpoint do
       before { span.set_tag('span.kind', 'consumer') }
 
       it 'returns broker as service name' do
-        expect(remote_endpoint(span)).to eq(serviceName: 'broker')
+        expect(remote_endpoint(span).service_name).to eq('broker')
       end
     end
 

@@ -28,10 +28,7 @@ module Zipkin
     end
 
     def self.local_endpoint(service_name)
-      {
-        serviceName: service_name,
-        ipv4: LOCAL_IP
-      }
+      new(service_name: service_name, ipv4: LOCAL_IP)
     end
 
     def self.remote_endpoint(span)
@@ -42,20 +39,27 @@ module Zipkin
       when SpanKind::SERVER, SpanKind::CLIENT
         return nil if (tags.keys & PeerInfo.keys).empty?
 
-        {
-          serviceName: tags[PeerInfo::SERVICE],
+        new(
+          service_name: tags[PeerInfo::SERVICE],
           ipv4: tags[PeerInfo::IPV4],
           ipv6: tags[PeerInfo::IPV6],
           port: tags[PeerInfo::PORT]
-        }
+        )
       when SpanKind::PRODUCER, SpanKind::CONSUMER
-        {
-          serviceName: 'broker'
-        }
+        new(service_name: 'broker')
       else
         warn "Unkown span kind: #{kind}"
         nil
       end
     end
+
+    def initialize(service_name: nil, ipv4: nil, ipv6: nil, port: nil)
+      @service_name = service_name
+      @ipv4 = ipv4
+      @ipv6 = ipv6
+      @port = port
+    end
+
+    attr_reader :service_name, :ipv4, :ipv6, :port
   end
 end

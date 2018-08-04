@@ -31,10 +31,17 @@ module Zipkin
         REMOTE_ENDPOINT = 'remoteEndpoint'.freeze
         ANNOTATIONS = 'annotations'.freeze
         TAGS = 'tags'.freeze
+
+        module Endpoint
+          SERVICE_NAME = 'serviceName'.freeze
+          IPV4 = 'ipv4'.freeze
+          IPV6 = 'ipv6'.freeze
+          PORT = 'port'.freeze
+        end
       end
 
       def initialize(local_endpoint)
-        @local_endpoint = local_endpoint
+        @local_endpoint = serialize_endpoint(local_endpoint)
       end
 
       def content_type
@@ -63,9 +70,20 @@ module Zipkin
           Fields::DEBUG => false,
           Fields::SHARED => false,
           Fields::LOCAL_ENDPOINT => @local_endpoint,
-          Fields::REMOTE_ENDPOINT => Endpoint.remote_endpoint(span),
+          Fields::REMOTE_ENDPOINT => serialize_endpoint(Endpoint.remote_endpoint(span)),
           Fields::ANNOTATIONS => LogAnnotations.build(span),
           Fields::TAGS => span.tags
+        }
+      end
+
+      def serialize_endpoint(endpoint)
+        return nil unless endpoint
+
+        {
+          Fields::Endpoint::SERVICE_NAME => endpoint.service_name,
+          Fields::Endpoint::IPV4 => endpoint.ipv4,
+          Fields::Endpoint::IPV6 => endpoint.ipv6,
+          Fields::Endpoint::PORT => endpoint.port
         }
       end
     end
