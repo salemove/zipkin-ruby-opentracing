@@ -8,8 +8,8 @@ RSpec.describe Zipkin::Encoders::JsonEncoder::LogAnnotations do
       message = 'some message'
       span.log_kv(event: message)
       expect(described_class.build(span)).to include(
-        timestamp: instance_of(Integer),
-        value: message
+        'timestamp' => instance_of(Integer),
+        'value' => message
       )
     end
   end
@@ -18,8 +18,8 @@ RSpec.describe Zipkin::Encoders::JsonEncoder::LogAnnotations do
     it 'converts fields into string form' do
       span.log_kv(foo: 'bar', baz: 'buz')
       expect(described_class.build(span)).to include(
-        timestamp: instance_of(Integer),
-        value: 'foo=bar baz=buz'
+        'timestamp' => instance_of(Integer),
+        'value' => 'foo=bar baz=buz'
       )
     end
   end

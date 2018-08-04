@@ -4,11 +4,16 @@ module Zipkin
   module Encoders
     class JsonEncoder
       module LogAnnotations
+        module Fields
+          TIMESTAMP = 'timestamp'.freeze
+          VALUE = 'value'.freeze
+        end
+
         def self.build(span)
           span.logs.map do |log|
             {
-              timestamp: Timestamp.create(log.fetch(:timestamp)),
-              value: format_log_value(log)
+              Fields::TIMESTAMP => Timestamp.create(log.fetch(:timestamp)),
+              Fields::VALUE => format_log_value(log)
             }
           end
         end
