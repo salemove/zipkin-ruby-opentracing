@@ -17,10 +17,10 @@ module Zipkin
     end
 
     module PeerInfo
-      SERVICE = :'peer.service'
-      IPV4 = :'peer.ipv4'
-      IPV6 = :'peer.ipv6'
-      PORT = :'peer.port'
+      SERVICE = 'peer.service'.freeze
+      IPV4 = 'peer.ipv4'.freeze
+      IPV6 = 'peer.ipv6'.freeze
+      PORT = 'peer.port'.freeze
 
       def self.keys
         [SERVICE, IPV4, IPV6, PORT]
@@ -33,7 +33,7 @@ module Zipkin
 
     def self.remote_endpoint(span)
       tags = span.tags
-      kind = tags[:'span.kind'] || SpanKind::SERVER
+      kind = tags['span.kind'] || SpanKind::SERVER
 
       case kind
       when SpanKind::SERVER, SpanKind::CLIENT

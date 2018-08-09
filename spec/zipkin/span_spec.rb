@@ -31,7 +31,7 @@ RSpec.describe Zipkin::Span do
     let(:span) { described_class.new(nil, 'operation_name', nil) }
 
     it 'converts nil value to empty string' do
-      key = :tag_key
+      key = 'tag_key'
       span.set_tag(key, nil)
       expect(span.tags.fetch(key)).to eq('')
     end
@@ -40,7 +40,7 @@ RSpec.describe Zipkin::Span do
   describe '#initialize' do
     context 'with tags' do
       it 'converts nil tag value to empty string' do
-        key = :tag_key
+        key = 'tag_key'
         span = described_class.new(
           nil, 'operation_name', nil, tags: { key => nil }
         )
@@ -49,10 +49,10 @@ RSpec.describe Zipkin::Span do
 
       it 'convers boolean values to string' do
         span = described_class.new(
-          nil, 'operation_name', nil, tags: { foo: false, bar: true }
+          nil, 'operation_name', nil, tags: { 'foo' => false, 'bar' => true }
         )
-        expect(span.tags.fetch(:foo)).to eq('false')
-        expect(span.tags.fetch(:bar)).to eq('true')
+        expect(span.tags.fetch('foo')).to eq('false')
+        expect(span.tags.fetch('bar')).to eq('true')
       end
     end
   end

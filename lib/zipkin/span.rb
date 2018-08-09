@@ -39,7 +39,7 @@ module Zipkin
     # a String, Numeric, or Boolean it will be encoded with to_s
     def set_tag(key, value)
       sanitized_value = valid_tag_value?(value) ? value : value.to_s
-      @tags = @tags.merge(key.to_sym => sanitized_value)
+      @tags = @tags.merge(key.to_s => sanitized_value)
     end
 
     # Set a baggage item on the span
