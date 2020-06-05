@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
 
   spec.summary       = 'OpenTracing Tracer implementation for Zipkin in Ruby'
   spec.description   = ''
-  spec.homepage      = ''
+  spec.homepage      = 'https://github.com/salemove/zipkin-ruby-opentracing'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
