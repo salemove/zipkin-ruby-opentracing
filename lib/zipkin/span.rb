@@ -29,7 +29,7 @@ module Zipkin
       @logs = []
       @references = references
 
-      tags.each(&method(:set_tag))
+      tags.each { |key, value| set_tag(key, value) }
     end
 
     # Set a tag value on this span
